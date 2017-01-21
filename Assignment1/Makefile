@@ -6,3 +6,4 @@ TARGET = stest
 
 all: ${SOURCES}
 	${CC} -o ${TARGET} ${CFLAGS} ${SOURCES} 
+	./${TARGET}
