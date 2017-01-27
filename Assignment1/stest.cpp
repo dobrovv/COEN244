@@ -7,7 +7,7 @@ using namespace std;
 
 
 
-int main() {
+void main() {
     
     // Test 1 expected result: 
     // Unknown   Unknown   '?' #0         Program:?          GPA:0
@@ -28,4 +28,6 @@ int main() {
     s2.setLastName( s2.getLastName().replace(0,3, "John") );
     s2.setId( s2.getId() + 1 );
     cout << s2 << endl;
+
+	return 0;
 }

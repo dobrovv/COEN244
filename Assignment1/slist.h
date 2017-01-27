@@ -1,0 +1,35 @@
+#ifndef STUDENTLIST_H
+#define STUDENTLIST_H
+
+#include "student.h"
+#include <vector>
+#include <string>
+
+
+class StudentList{
+private:
+	static const size_t LIST_SIZE = 150; // the maximum items in the list
+	Student *items; // items will point to the dynamically allocated array
+	size_t numItems; // the number of items currently in the list
+
+public:
+	StudentList(std::vector<Student> vs = std::vector<Student>());
+	//StudentList(const StudentList & other);
+	
+	void printStudentNames() const;
+
+	bool hasStudentId(int id) const;
+
+	// Perform a case sensitive check
+	bool hasStudentFirstName(const std::string & name) const;
+	bool hasStudentLastName(const std::string & name) const;
+
+	Student & at(size_t index);
+	Student & operator[](size_t index); 
+
+	~StudentList();
+
+				// member functions to be defined by to be defined and completed by YOU! Hooray!
+};
+
+#endif // STUDENTLIST_H

@@ -3,13 +3,7 @@
 #include <iomanip> 
 using namespace std;
 
-Student::Student() : 
-    id(0), firstName("Unknown"), lastName("Unknown"), 
-    gender('?'), major("?"), gpa(0.0)
-{}
-
-
-Student::Student(int id, std::string firstName, std::string lastName, char gender, std::string major, double gpa) :
+Student::Student(int id, const std::string & firstName, const std::string & lastName, char gender, const std::string & major, double gpa) :
     id(id), firstName(firstName), lastName(lastName), 
     gender(gender), major(major), gpa(gpa)
 {}

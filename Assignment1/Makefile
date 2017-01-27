@@ -1,8 +1,8 @@
 CC=g++
 CFLAGS = -Wall -std=c++11
 
-SOURCES = stest.cpp student.cpp
-TARGET = stest
+SOURCES = student.cpp slist.cpp slisttest.cpp
+TARGET = slisttest
 
 all: ${SOURCES}
 	${CC} -o ${TARGET} ${CFLAGS} ${SOURCES} 
