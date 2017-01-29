@@ -29,5 +29,5 @@ void main() {
     s2.setId( s2.getId() + 1 );
     cout << s2 << endl;
 
-	return 0;
+    return 0;
 }

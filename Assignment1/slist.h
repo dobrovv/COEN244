@@ -24,7 +24,7 @@ public:
 	bool hasStudentFirstName(const std::string & name) const;
 	bool hasStudentLastName(const std::string & name) const;
 
-        // Returns false if the list reached its maximal capacity
+        // Returns false if the list has reached its maximal capacity
         bool append(const Student & s);
 
 	Student & at(size_t index);
@@ -34,7 +34,6 @@ public:
 
 	~StudentList();
 
-				// member functions to be defined by to be defined and completed by YOU! Hooray!
 };
 
 #endif // STUDENTLIST_H
