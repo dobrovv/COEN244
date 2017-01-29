@@ -14,9 +14,9 @@ private:
 
 public:
 	StudentList(std::vector<Student> vs = std::vector<Student>());
-	//StudentList(const StudentList & other);
-	
-	void printStudentNames() const;
+	StudentList(const StudentList & other);
+
+        size_t size() const { return numItems; }
 
 	bool hasStudentId(int id) const;
 
@@ -24,8 +24,13 @@ public:
 	bool hasStudentFirstName(const std::string & name) const;
 	bool hasStudentLastName(const std::string & name) const;
 
+        // Returns false if the list reached its maximal capacity
+        bool append(const Student & s);
+
 	Student & at(size_t index);
-	Student & operator[](size_t index); 
+	Student & operator[](size_t index);
+        
+        void printStudentNames() const;        
 
 	~StudentList();
 

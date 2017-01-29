@@ -2,6 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include <stdexcept>
+#include <algorithm>
 using namespace std;
 
 const size_t StudentList::LIST_SIZE;
@@ -14,11 +15,20 @@ StudentList::StudentList(vector<Student> vs) {
 		items[i] = vs[i];
 }
 
+StudentList::StudentList(const StudentList & other) {
+    this->items = new Student[LIST_SIZE];
+    this->numItems = other.numItems;
+
+    for ( size_t i = 0; i < numItems; ++i ) {
+        this->items[i] = other.items[i];
+    }
+    
+}
 	
 	
 void StudentList::printStudentNames() const {
 	for ( size_t i = 0; i < numItems; ++i )
-		cout << setw(3) << i << setw(15) << items[i].getFirstName() << setw(15) << items[i].getLastName();
+		cout << setw(3) << i << setw(15) << items[i].getFirstName() << setw(15) << items[i].getLastName() << endl;
 }
 
 bool StudentList::hasStudentId(int id) const {
@@ -55,6 +65,13 @@ Student & StudentList::at(size_t index) {
 
 Student & StudentList::operator[](size_t index) {
 	return items[index];
+}
+
+bool StudentList::append(const Student &s) {
+    if ( numItems >= LIST_SIZE )
+        return false;
+    items[numItems++] = s;
+    return true;
 }
 
 StudentList::~StudentList() {
