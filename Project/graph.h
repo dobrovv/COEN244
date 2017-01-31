@@ -2,21 +2,24 @@
 #define GRAPH_H
 
 #include <vector>
-#include <pair>
+#include <utility>
 
 using T      = int;
-using vector = std::vector;
-using pair   = std::pair;
+template<typename T> 
+using vector = std::vector<T>;
+template<typename T1, typename T2> 
+using pair   = std::pair<T1,T2>;
 
 
 class Node {
     T val;
     vector<Node*> links_to;
-    vector<Node*> linked_from;    
+    vector<Node*> linked_from;
+    friend class Graph;
 };
 
 
-class Edge : public pair<Vertex *, Vertex *> {};
+class Edge : public pair<Node *, Node *> {};
 
 
 class Graph {
@@ -28,8 +31,6 @@ class Graph {
 
     Graph& addNode(Node * node);
     Graph& addEdge(Node * origin, Node * target);
-
-
-}
+};
 
 #endif
