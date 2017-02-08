@@ -49,8 +49,8 @@ public:
     //TODO:
     //add support for undirected graphs
 
-	inline size_t size() const { return nodes.size(); }
-	inline size_t isEmpty() const { return size() == 0; }
+    inline size_t size() const { return nodes.size(); }
+    inline size_t isEmpty() const { return size() == 0; }
 
     //TODO:
     //generate an id when 'id' parammeter is ommited
@@ -62,17 +62,14 @@ public:
     //TODO:
     //Node * queryByEdge(Node * origin, Node * target);
     //Node * queryByEdge(ID_T origin, ID_T target);
-    //6. given a starting vertex, list the paths this vertex leads to. 
-	
+    //6. given a starting vertex, list the paths this vertex leads to.
+
     std::vector<Node *> queryByValue(const T& value) const;
 
     void display(bool display_value = true, bool display_weight = true, std::ostream & out = std::cout) const;
 
     //TODO:
     //~Graph();
-    
-    
-    
 };
 
 #endif

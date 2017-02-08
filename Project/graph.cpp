@@ -1,7 +1,5 @@
 #include "graph.h"
 
-#include <iostream>
-
 
 Graph::Graph() {} 
 
@@ -29,20 +27,20 @@ Edge * Graph::addEdge(Node * origin, Node * target, int weight) {
     target->linked_from.push_back(edge);
 
     return edge;
-
 }
 
 
 Edge * Graph::addEdge(const ID_T& origin, const ID_T& target, int weight) {
     Node * org = queryById(origin);
     Node * trg = queryById(target);
+
     return Graph::addEdge(org, trg, weight);
 }
 
 
 Node * Graph::queryById(ID_T id) const {
-    for (Node * node : nodes)
-        if (node->id == id)
+    for ( Node * node : nodes )
+        if ( node->id == id )
             return node;
 
     return nullptr;
@@ -58,6 +56,7 @@ std::vector<Node *> Graph::queryByValue(const T& value) const {
     
     return result;
 }
+
 
 void Graph::display( bool display_value, bool display_weight,  std::ostream & out) const {
     out << "{";
