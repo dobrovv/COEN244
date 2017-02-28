@@ -30,11 +30,23 @@ Edge * Graph::addEdge(Node * origin, Node * target, int weight) {
 }
 
 
-Edge * Graph::addEdge(const ID_T& origin, const ID_T& target, int weight) {
+Edge * Graph::addEdge(const ID_T & origin, const ID_T & target, int weight) {
     Node * org = queryById(origin);
     Node * trg = queryById(target);
 
     return Graph::addEdge(org, trg, weight);
+}
+
+
+Edge * Graph::addEdge(Node * origin, const ID_T & target, int weight) {
+    Node * trg = queryById(target);
+    return Graph::addEdge(origin, trg, weight);
+}
+
+
+Edge * Graph::addEdge(const ID_T & origin, Node * target, int weight) {
+    Node * org = queryById(origin);
+    return Graph::addEdge(org, target);
 }
 
 
@@ -47,8 +59,17 @@ Node * Graph::queryById(ID_T id) const {
 }
 
 
-std::vector<Node *> Graph::queryByValue(const T& value) const {
-    std::vector<Node *> result;
+Edge * Graph::queryByEdge(Node * origin, Node * target) const {
+    for ( Edge * edge : origin->links_to )
+        if ( target == edge->target ) 
+            return edge;
+
+    return nullptr;
+}
+
+
+vector<Node *> Graph::queryByValue(const T & value) const {
+    vector<Node *> result;
     
     for ( Node * node : nodes )
         if ( node->value == value )

@@ -4,18 +4,18 @@
 #include <vector>
 #include <iostream>
 
+using std::vector;
+using size_t = std::size_t;
+
 //TODO:
 //make 'T' and 'ID_T' template parameters
 using T = int;
 using ID_T = int;
 
-using size_t = std::size_t;
-
 
 class Node;
-class Graph;
 class Edge;
-
+class Graph;
 
 class Edge {
     Node * origin;
@@ -33,8 +33,8 @@ class Node {
     ID_T    id;
     Graph * graph;
 
-    std::vector<Edge*> links_to;
-    std::vector<Edge*> linked_from;
+    vector<Edge*> links_to;
+    vector<Edge*> linked_from;
 
     friend class Graph;
 };
@@ -42,7 +42,7 @@ class Node {
 
 class Graph {
 
-    std::vector<Node*> nodes;
+    vector<Node*> nodes;
 
 public:
     Graph();
@@ -55,16 +55,20 @@ public:
     //TODO:
     //generate an id when 'id' parammeter is ommited
     Node * addNode(const T& value, const ID_T& id);
+
     Edge * addEdge(Node * origin, Node * target, int weight=1);
-    Edge * addEdge(const ID_T& origin, const ID_T& target, int weight=1);
+    Edge * addEdge(const ID_T & origin, const ID_T & target, int weight=1);
+    Edge * addEdge(Node * origin, const ID_T & target, int weight=1);
+    Edge * addEdge(const ID_T & origin, Node * target, int weight=1);
 
     Node * queryById(ID_T id) const ;
+
+    Edge * queryByEdge(Node * origin, Node * target) const; 
     //TODO:
-    //Node * queryByEdge(Node * origin, Node * target);
-    //Node * queryByEdge(ID_T origin, ID_T target);
+    //Edge * queryByEdge(ID_T origin, ID_T target) const;
     //6. given a starting vertex, list the paths this vertex leads to.
 
-    std::vector<Node *> queryByValue(const T& value) const;
+    vector<Node *> queryByValue(const T& value) const;
 
     void display(bool display_value = true, bool display_weight = true, std::ostream & out = std::cout) const;
 
