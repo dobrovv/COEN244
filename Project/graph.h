@@ -10,14 +10,14 @@ using size_t = std::size_t;
 //TODO:
 //make 'T' and 'ID_T' template parameters
 using T = int;
-using ID_T = int;
-
+using ID_T = char;
 
 class Node;
 class Edge;
 class Graph;
 
 class Edge {
+public: // !!! only for testing
     Node * origin;
     Node * target;
 
@@ -28,6 +28,7 @@ class Edge {
 
 
 class Node {
+public: // !!! only for testing
     T value;
 
     ID_T    id;
@@ -53,22 +54,22 @@ public:
     inline size_t isEmpty() const { return size() == 0; }
 
     //TODO:
-    //generate an id when 'id' parammeter is ommited
+    //generate an id when 'id' parammeter is ommited (hard to implement)
     Node * addNode(const T& value, const ID_T& id);
 
     Edge * addEdge(Node * origin, Node * target, int weight=1);
     Edge * addEdge(const ID_T & origin, const ID_T & target, int weight=1);
-    Edge * addEdge(Node * origin, const ID_T & target, int weight=1);
-    Edge * addEdge(const ID_T & origin, Node * target, int weight=1);
 
     Node * queryById(ID_T id) const ;
 
     Edge * queryByEdge(Node * origin, Node * target) const; 
-    //TODO:
-    //Edge * queryByEdge(ID_T origin, ID_T target) const;
-    //6. given a starting vertex, list the paths this vertex leads to.
+    Edge * queryByEdge(const ID_T & origin, const ID_T & target) const;
 
     vector<Node *> queryByValue(const T& value) const;
+
+    vector<vector<Edge*>> listPaths(Node * origin) const;
+    vector<vector<Edge*>> listPaths(const ID_T & origin) const;
+
 
     void display(bool display_value = true, bool display_weight = true, std::ostream & out = std::cout) const;
 
