@@ -6,7 +6,6 @@
 template <typename ELEM_T>
 bool Graph::removeElement(vector<ELEM_T> & vec, ELEM_T elem)
 {
-    std::cout << "Size:" << vec.size();
     typename vector<ELEM_T>::iterator it = vec.begin();
     
     while ( it != vec.end() ) {
@@ -14,7 +13,6 @@ bool Graph::removeElement(vector<ELEM_T> & vec, ELEM_T elem)
             vec.erase(it);
             return true;
         }
-        std::cout << *it;
         std::advance(it, 1);
     }
     
@@ -107,8 +105,8 @@ void  Graph::removeEdge(Edge * edge) {
     Node * origin = edge->getOrigin();
     Node * target = edge->getTarget();
 
-    std::cout << removeElement(origin->links_to, edge);
-    std::cout << removeElement(target->linked_from, edge);
+    removeElement(origin->links_to, edge);
+    removeElement(target->linked_from, edge);
     delete edge;
 }
 
@@ -176,48 +174,43 @@ Node * Graph::operator[](const ID_T & id) {
 //  \        \-> e
 //   \-> f -> h
 // ------------------------------
-//  Then node a in g contains following paths:
-//  1. a -> b -> c -> d
-//  2. a -> b -> c -> e
-//  3. a -> f -> h
+//  Then the node b in g contains following paths:
+//  1. b -> c
+//  2. b -> c -> d
+//  3. b -> c -> e
 
 
 vector<vector<Edge*>> Graph::listPaths(Node * origin) const { 
     vector<vector<Edge *>> paths;
     
-    // Basis case: origin node doesn't link to any other nodes 
-    
-    if ( origin->links_to.size() == 0 )
+    vector<Edge*> edgesFromOrigin = origin->edgesFromNode();
+
+    // Base case: origin node doesn't contain any edges 
+    if ( edgesFromOrigin.size() == 0 )
         return paths;
 
-    // Recursive case: call listPaths() for every node linked from the origin
-    // The edge linking the orign node to each target node 
-    // is prepended to the paths returned from the listPaths() call
+    // Recursive case: call listPaths() for every edge in the origin
+    // The edge between origin node to every target node 
+    // is then prepended to each path returned from the listPaths() call
 
-    for ( size_t i = 0; i < origin->links_to.size(); ++i ) {
-        Edge * edge_to_target = origin->links_to[i];
-        Node * target = edge_to_target->target;
+    for ( size_t i = 0; i < edgesFromOrigin.size(); ++i ) {
+        Edge * edge_from_origin = edgesFromOrigin[i];
+        Node * target = edge_from_origin->getTarget();
 
-        // Recursive call
+        // Add the edge between the origin and target nodes as a path
+        vector<Edge*> path;
+        path.push_back(edge_from_origin);
+        paths.push_back(path);
+        
+        // Recursive call to get paths of the target node
         vector<vector<Edge*>> target_paths = listPaths(target);
         
-        if ( target_paths.size() == 0) { 
-            // if target doesn't link to any other nodes ( is a terminal node )
-            // then the edge between the origin and target node is the whole path
-            
-            vector<Edge*> path;
-            path.push_back(edge_to_target);
+        // Preapend the edge between the origin and target nodes 
+        // to every path returned from the listPaths(target) call
+        for ( auto & trgt_path : target_paths ) {
+            vector<Edge*> path = trgt_path;
+            path.insert(path.begin(), edge_from_origin);
             paths.push_back(path);
-
-        } else {
-            // else preapend the edge between the origin and target nodes to every path
-            // returned from the listPaths(target) call
-
-            for ( auto & trgt_path : target_paths ) {
-                vector<Edge*> path = trgt_path;
-                path.insert(path.begin(), edge_to_target);
-                paths.push_back(path);
-            }
         }
     }
     
@@ -229,6 +222,31 @@ vector<vector<Edge*>> Graph::listPaths(const ID_T & origin) const {
     Node * org = queryById(origin);
     return listPaths(org);
 }
+
+
+bool Graph::leadsTo(Node * origin, Node * target) const {
+    vector<vector<Edge*>> paths = listPaths(origin);
+
+    for ( auto path : paths ) {
+        
+        //Ensure that path has at least one edge
+        if ( path.size() == 0 )
+            return false;
+
+        Edge * last_edge = path[ path.size() -1]; 
+        if ( last_edge->getTarget()  == target )
+            return true;
+    }
+
+    return false;
+}
+
+bool Graph::leadsTo(ID_T origin, ID_T target) const {
+    Node * orig = queryById(origin);
+    Node * trgt = queryById(target);
+    return leadsTo(orig, trgt);
+}
+
 
 void Graph::displayEdges( bool display_value, bool display_weight,  std::ostream & out) const {
     out << "{";

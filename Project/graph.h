@@ -112,6 +112,10 @@ public:
     
     vector<Node*> getNodes() const;
     vector<Edge*> getEdges() const;
+   
+    // Functions returning paths followed from a specific node
+    vector<vector<Edge*>> listPaths(Node * origin) const;
+    vector<vector<Edge*>> listPaths(const ID_T & origin) const;
 
     Node * operator[](const ID_T & id);
 
@@ -120,12 +124,14 @@ public:
     Edge * queryByEdge(Node * origin, Node * target) const; 
     Edge * queryByEdge(const ID_T & origin, const ID_T & target) const;
 
+    // Functions returtning wheter there exists a path between
+    // the origin and target node
+    bool leadsTo(Node * origin, Node * target) const;
+    bool leadsTo(ID_T origin, ID_T target) const;
+
     vector<Node *> queryByValue(const T& value) const;
 
-    vector<vector<Edge*>> listPaths(Node * origin) const;
-    vector<vector<Edge*>> listPaths(const ID_T & origin) const;
-
-
+        
     void displayEdges(bool display_value = true, bool display_weight = true, std::ostream & out = std::cout) const;
 
     //TODO:
