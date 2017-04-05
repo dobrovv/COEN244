@@ -1,4 +1,5 @@
 #include "graph.h"
+#include "directed_graph.h"
 
 #include <iostream>
 #include <vector>
@@ -62,37 +63,23 @@ int main() {
     //
     
     // Sending g to the ostream
-    cout << "Graph g:"<< endl << g << endl;
+    cout << "Graph g:"<< endl << g << endl << endl;
     
     // Displaying the first edge in g
     vector<Edge*> edges = g.getEdges();
-    cout << "First edge in g:" << endl << edges.at(0) << endl;
+    cout << "First edge in g:" << endl << edges.at(0) << endl << endl;
     
     // Displaying edges of the graph without values but with weights
-    cout << "Edges in g without values:" << endl;
+    cout << "Edges in g without values displayed:" << endl;
     g.displayEdges(false, true, cout);
-    cout << endl;
+    cout << endl << endl;
     
-   
-    //
-    // Removing Nodes and Edges
-    //
-
-    // Quering the graph to find the a->b edge
-    Edge * ab = g.queryByEdge(a,b);
-
-    // Removing the edge
-    g.removeEdge( ab );
-
-    cout << endl << "Listing the graph with a -> b removed:" << endl;
-    cout << g << endl;
-
     //
     // Quering the graph
     //
     
-    cout << endl << "Listing Paths:" << endl;
-    vector<vector<Edge*>> paths = g.listPaths('b');
+    cout << "Listing paths going from a:" << endl;
+    vector<vector<Edge*>> paths = g.listPaths('a');
 
     for (auto & path : paths) {
         int count = 1;
@@ -102,9 +89,75 @@ int main() {
         }
         cout << endl;
     }
+    cout << endl << endl;
+
+    cout << boolalpha;
+    cout << "Does a lead to c?: " << g.leadsTo(a,c) << endl;
+    cout << "Does h lead to a?: " << g.leadsTo(g['h'],a) << endl << endl;
+
+
+    //
+    // Removing Nodes and Edges
+    //
+
+    // Creating a copy of g
+    Graph g_copy(g);
+    cout << "Creating a copy of g:" << endl;
+    cout << g_copy << endl << endl;
+
+    // Quering the graph to find the a->b edge
+    Edge * ab = g_copy.queryByEdge(a,b);
+    
+    // Removing the edge
+    g_copy.removeEdge( ab );
+
+    cout << "Listing the copy of g with a -> b removed:" << endl;
+    cout << g_copy << endl << endl;
+
+    g_copy.removeNode(g_copy['f']);
+    cout << "Listing the copy of g with f removed:" << endl;
+    cout << g_copy << endl << endl;
+
+    //
+    // Directed Graph
+    //
+    
+    // Creating a directed graph
+    // with nodes a,b,c,d and edges
+    // -------------
+    // a <-> b <-> c
+    //       ^
+    //       \-> d <-> e 
+    // -------------
+
+    DirectedGraph dg;
+
+    dg.addNode(1,'a');
+    dg.addNode(2,'b');
+    dg.addNode(3,'c');
+    dg.addNode(4,'d');
+    dg.addNode(5,'e');
+
+    dg.addEdge(dg['a'],dg['b']);
+    dg.addEdge('b','c');
+    dg.addEdge('b','d');
+    dg.addEdge('d','e');
+
+    cout << "Displaying the Directed Graph dg:" << endl;
+    cout << dg << endl << endl;
+
+    cout << "Displaying paths from the b node in dg:" << endl;
+    vector<vector<Edge*>> directed_paths = dg.listPaths(dg['b']);
+
+    for (auto & path : directed_paths) {
+        int count = 1;
+        cout << count++ << ". " << path.at(0)->getOrigin()->getID();
+        for (auto & edge : path) {
+            cout << " <-> " << edge->getTarget()->getID();
+        }
+        cout << endl;
+    }
     cout << endl;
 
-    cout << "Does a lead to c?" << g.leadsTo(a,c) << endl;
-    cout << "Does a lead to h?" << g.leadsTo(a,g['h']) << endl;
-
+    return 0;
 }

@@ -4,7 +4,7 @@
 // Helper Function
 // removes an element by value from a generic vector
 template <typename ELEM_T>
-bool Graph::removeElement(vector<ELEM_T> & vec, ELEM_T elem)
+bool removeElement(vector<ELEM_T> & vec, ELEM_T elem)
 {
     typename vector<ELEM_T>::iterator it = vec.begin();
     
@@ -35,7 +35,7 @@ ostream & operator<<(ostream & out, const Graph & g) {
     out << "{";
     for ( Node * node: g.getNodes() ) {
         for ( Edge * edge: node->edgesFromNode() ) {
-            out  << edge << ", ";
+            out  << edge << "; ";
         }
     }
     out << "}";
@@ -50,6 +50,18 @@ Graph::~Graph() {
 
     for ( auto node : allNodes ) {
         removeNode(node); // removeNode() deletes node's edges
+    }
+}
+
+Graph::Graph(const Graph& other) {
+    
+    for ( Node * node : other.getNodes() ) {
+        addNode(node->getValue(), node->getID());
+    }
+
+    for ( Edge * edge : other.getEdges() ) {
+        addEdge(edge->getOrigin()->getID(), 
+                edge->getTarget()->getID(), edge->getWeight());
     }
 }
 
@@ -262,7 +274,7 @@ void Graph::displayEdges( bool display_value, bool display_weight,  std::ostream
                 out << ":" << edge->getTarget()->getValue();
             if ( display_weight )
                 out << " |" << edge->getWeight();
-            out << ( i == size()-1 ? ")" : "), " );
+            out << "); ";
         }
     }
     out << "}"; }

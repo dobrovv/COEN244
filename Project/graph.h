@@ -95,8 +95,7 @@ class Graph {
 public:
     Graph();
     ~Graph();
-    //TODO:
-    //Graph(const Graph& other)
+    Graph(const Graph& other);
 
     /* Member Access Functions*/
     inline size_t size() const { return nodes.size(); }
@@ -134,17 +133,14 @@ public:
         
     void displayEdges(bool display_value = true, bool display_weight = true, std::ostream & out = std::cout) const;
 
-    //TODO:
-    //~Graph();
-private:
-
-    /* Helper Functions */
-    
-    // removes an element by value from a generic vector
-    template <typename ELEM_T>
-    bool removeElement(vector<ELEM_T> & vec, ELEM_T elem);
-
 };
+
+/* Helper & Miscellaneous Functions */
+    
+// removes an element by value from a generic vector
+template <typename ELEM_T>
+bool removeElement(vector<ELEM_T> & vec, ELEM_T elem);
+
 
 ostream & operator<<(ostream& out, Node * node);
 ostream & operator<<(ostream& out, Edge *edge);

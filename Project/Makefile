@@ -1,6 +1,6 @@
 CC 	= g++
 CFLAGS 	= -Wall -std=c++11
-SOURCES = gtest.cpp graph.cpp graph.h
+SOURCES = gtest.cpp graph.cpp graph.h directed_graph.cpp directed_graph.h
 TARGET = gtest
 
 ifeq ($(OS), Windows_NT)
