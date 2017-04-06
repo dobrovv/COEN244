@@ -54,14 +54,18 @@ protected:
 
 public:
     T getValue() const { return value; }
+    void setValue(const T & newValue) { value=newValue; }
+    
     ID_T getID() const { return id; }
     Graph * getGraph() const { return graph; }
 
     vector<Edge*> edgesToNode() const { return linked_from; }
     vector<Edge*> edgesFromNode() const { return links_to; }
-
-    void setValue(const T & newValue) { value=newValue; }
-    
+    vector<Edge*> edgesUndirected() const {
+        vector<Edge*> undirected_edges(links_to);
+        undirected_edges.insert( undirected_edges.end(), linked_from.begin(), linked_from.end() );
+        return undirected_edges;
+    } 
 };
 
 
@@ -90,17 +94,19 @@ public:
 
 class Graph {
 
+    bool is_directed;
     vector<Node*> nodes;
 
 public:
-    Graph();
-    ~Graph();
+    Graph(bool directed = true);
     Graph(const Graph& other);
+    
+    ~Graph();
 
     /* Member Access Functions*/
     inline size_t size() const { return nodes.size(); }
     inline size_t isEmpty() const { return size() == 0; }
-
+    inline bool isDirected() const { return is_directed;}
     Node * addNode(const T& value, const ID_T& id);    
     void removeNode(Node * node);
 
@@ -113,7 +119,7 @@ public:
     vector<Edge*> getEdges() const;
    
     // Functions returning paths followed from a specific node
-    vector<vector<Edge*>> listPaths(Node * origin) const;
+    vector<vector<Edge*>> listPaths(Node * origin, Node * ignore = nullptr) const;
     vector<vector<Edge*>> listPaths(const ID_T & origin) const;
 
     Node * operator[](const ID_T & id);
@@ -123,16 +129,18 @@ public:
     Edge * queryByEdge(Node * origin, Node * target) const; 
     Edge * queryByEdge(const ID_T & origin, const ID_T & target) const;
 
-    // Functions returtning wheter there exists a path between
+    // Functions returtning whether there exists a path between
     // the origin and target node
     bool leadsTo(Node * origin, Node * target) const;
     bool leadsTo(ID_T origin, ID_T target) const;
 
     vector<Node *> queryByValue(const T& value) const;
 
-        
-    void displayEdges(bool display_value = true, bool display_weight = true, std::ostream & out = std::cout) const;
+    /* Output */ 
+    void displayEdges(bool display_values = true, bool display_weight = true, std::ostream & out = std::cout) const;
 
+    void displayPaths(Node * node, ostream & out = std::cout) const;
+    void displayPaths(const ID_T & id, ostream & out = std::cout ) const;
 };
 
 /* Helper & Miscellaneous Functions */
@@ -141,9 +149,9 @@ public:
 template <typename ELEM_T>
 bool removeElement(vector<ELEM_T> & vec, ELEM_T elem);
 
-
+// ostream overloads for
 ostream & operator<<(ostream& out, Node * node);
 ostream & operator<<(ostream& out, Edge *edge);
-ostream & operator<<(ostream & out, const Graph &);
+ostream & operator<<(ostream & out, const Graph & g);
 
 #endif

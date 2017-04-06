@@ -2,7 +2,7 @@
 #include <iterator>
 
 // Helper Function
-// removes an element by value from a generic vector
+// Removes an element by value from a generic vector
 template <typename ELEM_T>
 bool removeElement(vector<ELEM_T> & vec, ELEM_T elem)
 {
@@ -32,21 +32,21 @@ ostream & operator<<(ostream& out, Edge *edge){
 
 
 ostream & operator<<(ostream & out, const Graph & g) {
-    out << "{";
+    out << "(Nodes: {";
     for ( Node * node: g.getNodes() ) {
-        for ( Edge * edge: node->edgesFromNode() ) {
-            out  << edge << "; ";
-        }
+            out  << node->getID() << ": " << node->getValue() << "; ";
     }
-    out << "}";
+    out << "}, Edges: ";
+    g.displayEdges(false, true, out);
+    out << ")";
     return out;
 }
 
 
-Graph::Graph() {} 
+Graph::Graph(bool directed) : is_directed(directed) {} 
 
 Graph::~Graph() {
-    vector<Node *> allNodes = this->getNodes();
+    vector<Node *> allNodes = getNodes();
 
     for ( auto node : allNodes ) {
         removeNode(node); // removeNode() deletes node's edges
@@ -54,7 +54,7 @@ Graph::~Graph() {
 }
 
 Graph::Graph(const Graph& other) {
-    
+    is_directed = other.is_directed;
     for ( Node * node : other.getNodes() ) {
         addNode(node->getValue(), node->getID());
     }
@@ -133,9 +133,17 @@ Node * Graph::queryById(ID_T id) const {
 
 
 Edge * Graph::queryByEdge(Node * origin, Node * target) const {
-    for ( Edge * edge : origin->links_to )
-        if ( target == edge->target ) 
+    for ( Edge * edge : origin->edgesFromNode() )
+        if ( target == edge->getTarget() ) 
             return edge;
+
+    // If the graph isn't directed search for the edge
+    // that is going from the target node to the origin aswell
+    if ( !is_directed ) {
+        for ( Edge * edge : target->edgesFromNode() )
+            if ( origin == edge->getTarget() ) 
+                return edge;
+    }
 
     return nullptr;
 }
@@ -153,7 +161,7 @@ vector<Node *> Graph::queryByValue(const T & value) const {
     vector<Node *> result;
     
     for ( Node * node : nodes )
-        if ( node->value == value )
+        if ( node->getValue() == value )
             result.push_back(node);
     
     return result;
@@ -168,7 +176,7 @@ vector<Edge*> Graph::getEdges() const {
     
     for ( size_t i = 0; i < nodes.size(); ++i) {
         Node * orig = nodes[i];
-        for ( Edge * edge : orig->links_to ) {
+        for ( Edge * edge : orig->edgesFromNode() ) {
             edges.push_back(edge);
         }
     }
@@ -179,52 +187,79 @@ Node * Graph::operator[](const ID_T & id) {
     return queryById(id);
 }
 
+
+// Return a list of paths (a path is represented as vector<Edge*>)
+// that are possible to follow from the origin node.
 // Example:
-// Suppose a graph g is  
+// Suppose a graph g is connected like this: 
 // ------------------------------
 // a -> b-> c-> d
 //  \        \-> e
 //   \-> f -> h
 // ------------------------------
-//  Then the node b in g contains following paths:
+//  Then the list of possible paths from b in g are:
 //  1. b -> c
 //  2. b -> c -> d
 //  3. b -> c -> e
-
-
-vector<vector<Edge*>> Graph::listPaths(Node * origin) const { 
+// The ignore parameter allows to specify a node whose path should be ignored 
+vector<vector<Edge*>> Graph::listPaths(Node * origin, Node *ignore) const { 
     vector<vector<Edge *>> paths;
     
-    vector<Edge*> edgesFromOrigin = origin->edgesFromNode();
+    vector<Edge*> edgesFromOrigin;
+    
+    if ( isDirected() ) { 
+        edgesFromOrigin = origin->edgesFromNode();
+    } else {
+        edgesFromOrigin = origin->edgesUndirected();
+    }
+
+    // If an ignored node was specified remove the edge leading to it
+    if ( ignore ) {
+        Edge * ignore_edge = queryByEdge(origin, ignore);
+        removeElement(edgesFromOrigin, ignore_edge);
+    }
 
     // Base case: origin node doesn't contain any edges 
+    
     if ( edgesFromOrigin.size() == 0 )
         return paths;
 
     // Recursive case: call listPaths() for every edge in the origin
-    // The edge between origin node to every target node 
-    // is then prepended to each path returned from the listPaths() call
+    // The edge between the origin node and every target node is 
+    // then prepended to paths returned from subsequent listPaths() call
 
     for ( size_t i = 0; i < edgesFromOrigin.size(); ++i ) {
-        Edge * edge_from_origin = edgesFromOrigin[i];
-        Node * target = edge_from_origin->getTarget();
+        Edge * edge = edgesFromOrigin[i];
+        Node * target;
+        
+        if ( isDirected() || edge->getTarget() != origin ) {
+            target = edge->getTarget();
+        } else {
+            target = edge->getOrigin();
+        }
 
         // Add the edge between the origin and target nodes as a path
         vector<Edge*> path;
-        path.push_back(edge_from_origin);
+        path.push_back(edge);
         paths.push_back(path);
         
-        // Recursive call to get paths of the target node
-        vector<vector<Edge*>> target_paths = listPaths(target);
+        // Recursive call to get the paths of the target node
+        vector<vector<Edge*>> paths_of_target; 
+        
+        if ( isDirected() ) {
+            paths_of_target = listPaths(target);
+        } else {
+            paths_of_target = listPaths(target,origin);
+        }
         
         // Preapend the edge between the origin and target nodes 
         // to every path returned from the listPaths(target) call
-        for ( auto & trgt_path : target_paths ) {
+        for ( auto & trgt_path : paths_of_target ) {
             vector<Edge*> path = trgt_path;
-            path.insert(path.begin(), edge_from_origin);
+            path.insert(path.begin(), edge);
             paths.push_back(path);
         }
-    }
+  }
     
     return paths; 
 }
@@ -240,14 +275,16 @@ bool Graph::leadsTo(Node * origin, Node * target) const {
     vector<vector<Edge*>> paths = listPaths(origin);
 
     for ( auto path : paths ) {
-        
-        //Ensure that path has at least one edge
-        if ( path.size() == 0 )
-            return false;
+        for ( auto edge : path ) {
+            if ( edge->getTarget() ==  target) {
+                return true;
 
-        Edge * last_edge = path[ path.size() -1]; 
-        if ( last_edge->getTarget()  == target )
-            return true;
+            // In case of an undirected graph 
+            // the target and the origin can be swapped
+            } else if ( !isDirected() && edge->getOrigin() == target) {
+                return true;
+            }
+        }
     }
 
     return false;
@@ -258,7 +295,6 @@ bool Graph::leadsTo(ID_T origin, ID_T target) const {
     Node * trgt = queryById(target);
     return leadsTo(orig, trgt);
 }
-
 
 void Graph::displayEdges( bool display_value, bool display_weight,  std::ostream & out) const {
     out << "{";
@@ -277,4 +313,43 @@ void Graph::displayEdges( bool display_value, bool display_weight,  std::ostream
             out << "); ";
         }
     }
-    out << "}"; }
+    out << "}"; 
+}
+
+void Graph::displayPaths(Node * node, ostream & out) const {
+    vector<vector<Edge*>> paths = listPaths(node);
+
+    int count = 1;
+
+    if ( isDirected() ) {
+        for (auto & path : paths) {
+            out << count++ << ". " << path.at(0)->getOrigin()->getID();
+            for (auto & edge : path) {
+                out << " -> " << edge->getTarget()->getID();
+            }
+            out << '\n';
+        }
+
+    } else {
+        for ( auto & path : paths ) {
+            out << count++ << ". " << node->getID();
+            Node * origin = node;
+            for ( auto & edge : path ) {
+                if ( edge->getTarget() == origin ) {
+                    out << " <-> " << edge->getOrigin()->getID();
+                    origin = edge->getOrigin();
+                } else {
+                    out << " <-> " << edge->getTarget()->getID();
+                    origin = edge->getTarget();
+                }
+            }
+            out << '\n';
+        }
+    }
+}
+
+
+void Graph::displayPaths(const ID_T & id, ostream & out ) const {
+    Node * node = queryById(id);
+    return displayPaths(node, out);
+}

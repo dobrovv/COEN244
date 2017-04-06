@@ -1,5 +1,4 @@
 #include "graph.h"
-#include "directed_graph.h"
 
 #include <iostream>
 #include <vector>
@@ -36,7 +35,7 @@ int main() {
 
     // Aleternativly instead of storing the Node * the user 
     // may reffer to the nodes by their IDs
-    g.addNode(6, 'f');
+    g.addNode(6, 'f'); 
     g.addNode(7, 'h');
    
 
@@ -69,9 +68,10 @@ int main() {
     vector<Edge*> edges = g.getEdges();
     cout << "First edge in g:" << endl << edges.at(0) << endl << endl;
     
-    // Displaying edges of the graph without values but with weights
-    cout << "Edges in g without values displayed:" << endl;
-    g.displayEdges(false, true, cout);
+    // Displaying edges of the graph with weights and nodes values
+    // ex (a:1, b:2 |15), where 1 and 2 are values of nodes 1 and 2and |15 is the weight
+    cout << "Edges in g with values displayed:" << endl;
+    g.displayEdges(true, true, cout);
     cout << endl << endl;
     
     //
@@ -79,18 +79,14 @@ int main() {
     //
     
     cout << "Listing paths going from a:" << endl;
+    //Getting the paths
     vector<vector<Edge*>> paths = g.listPaths('a');
+    
+    //Displaying the paths
+    g.displayPaths(a);
+    cout << endl;
 
-    for (auto & path : paths) {
-        int count = 1;
-        cout << count++ << ". " << path.at(0)->getOrigin()->getID();
-        for (auto & edge : path) {
-            cout << " -> " << edge->getTarget()->getID();
-        }
-        cout << endl;
-    }
-    cout << endl << endl;
-
+    // Quering if a particular path exists
     cout << boolalpha;
     cout << "Does a lead to c?: " << g.leadsTo(a,c) << endl;
     cout << "Does h lead to a?: " << g.leadsTo(g['h'],a) << endl << endl;
@@ -106,7 +102,7 @@ int main() {
     cout << g_copy << endl << endl;
 
     // Quering the graph to find the a->b edge
-    Edge * ab = g_copy.queryByEdge(a,b);
+    Edge * ab = g_copy.queryByEdge('a','b');
     
     // Removing the edge
     g_copy.removeEdge( ab );
@@ -119,10 +115,10 @@ int main() {
     cout << g_copy << endl << endl;
 
     //
-    // Directed Graph
+    // Undirected Graph
     //
     
-    // Creating a directed graph
+    // Creating an udirected graph
     // with nodes a,b,c,d and edges
     // -------------
     // a <-> b <-> c
@@ -130,34 +126,30 @@ int main() {
     //       \-> d <-> e 
     // -------------
 
-    DirectedGraph dg;
+    Graph ug(false);
 
-    dg.addNode(1,'a');
-    dg.addNode(2,'b');
-    dg.addNode(3,'c');
-    dg.addNode(4,'d');
-    dg.addNode(5,'e');
+    ug.addNode(1,'a');
+    ug.addNode(2,'b');
+    ug.addNode(3,'c');
+    ug.addNode(4,'d');
+    ug.addNode(5,'e');
 
-    dg.addEdge(dg['a'],dg['b']);
-    dg.addEdge('b','c');
-    dg.addEdge('b','d');
-    dg.addEdge('d','e');
+    ug.addEdge(ug['a'],ug['b']);
+    ug.addEdge('b','c');
+    ug.addEdge('b','d');
+    ug.addEdge('d','e');
 
-    cout << "Displaying the Directed Graph dg:" << endl;
-    cout << dg << endl << endl;
+    // Displaying the undirected graph ug "
+    cout << "Displaying the Directed Graph ug:" << endl;
+    cout << ug << endl << endl;
 
-    cout << "Displaying paths from the b node in dg:" << endl;
-    vector<vector<Edge*>> directed_paths = dg.listPaths(dg['b']);
-
-    for (auto & path : directed_paths) {
-        int count = 1;
-        cout << count++ << ". " << path.at(0)->getOrigin()->getID();
-        for (auto & edge : path) {
-            cout << " <-> " << edge->getTarget()->getID();
-        }
-        cout << endl;
-    }
+    cout << "Displaying paths available from the b node in ug:" << endl;
+    ug.displayPaths(ug['b']);
     cout << endl;
+    
+    cout << boolalpha;
+    cout << "Does a lead to e?: " << ug.leadsTo('a','e') << endl;
+    cout << "Does e lead to a?: " << ug.leadsTo('e','a') << endl << endl;
 
     return 0;
 }
