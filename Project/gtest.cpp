@@ -6,9 +6,11 @@
 using namespace std;
 
 int main() {
-
-    Graph g;
-
+    Graph<int, char> g;
+    
+    using NodeT = Graph<int,char>::NodeT;
+    using EdgeT = Graph<int,char>::EdgeT;
+    
     // Suppose the required graph g
     // contains nodes a,b,c,d,e,f,h
     // and edges:
@@ -27,8 +29,8 @@ int main() {
     
     // Graph::addNode() returns a Node * that is used by 
     // the methods of the graph to access the nodes 
-    Node * a = g.addNode(1, 'a');
-    Node * b = g.addNode(2, 'b');
+    NodeT * a = g.addNode(1, 'a');
+    NodeT * b = g.addNode(2, 'b');
     auto * c = g.addNode(3, 'c');
     auto * d = g.addNode(4, 'd');
     auto * e = g.addNode(5, 'e');
@@ -65,7 +67,7 @@ int main() {
     cout << "Graph g:"<< endl << g << endl << endl;
     
     // Displaying the first edge in g
-    vector<Edge*> edges = g.getEdges();
+    vector<EdgeT*> edges = g.getEdges();
     cout << "First edge in g:" << endl << edges.at(0) << endl << endl;
     
     // Displaying edges of the graph with weights and nodes values
@@ -80,7 +82,7 @@ int main() {
     
     cout << "Listing paths going from a:" << endl;
     //Getting the paths
-    vector<vector<Edge*>> paths = g.listPaths('a');
+    vector<vector<EdgeT*>> paths = g.listPaths('a');
     
     //Displaying the paths
     g.displayPaths(a);
@@ -97,12 +99,12 @@ int main() {
     //
 
     // Creating a copy of g
-    Graph g_copy(g);
+    Graph<int,char> g_copy(g);
     cout << "Creating a copy of g:" << endl;
     cout << g_copy << endl << endl;
 
     // Quering the graph to find the a->b edge
-    Edge * ab = g_copy.queryByEdge('a','b');
+    EdgeT * ab = g_copy.queryByEdge('a','b');
     
     // Removing the edge
     g_copy.removeEdge( ab );
@@ -126,30 +128,29 @@ int main() {
     //       \-> d <-> e 
     // -------------
 
-    Graph ug(false);
+    Graph<float, string> ug(false);
 
-    ug.addNode(1,'a');
-    ug.addNode(2,'b');
-    ug.addNode(3,'c');
-    ug.addNode(4,'d');
-    ug.addNode(5,'e');
+    ug.addNode(0.5,"a");
+    ug.addNode(1,"b");
+    ug.addNode(2,"c");
+    ug.addNode(3,"d");
+    ug.addNode(4,"e");
 
-    ug.addEdge(ug['a'],ug['b']);
-    ug.addEdge('b','c');
-    ug.addEdge('b','d');
-    ug.addEdge('d','e');
+    ug.addEdge(ug["a"],ug["b"]);
+    ug.addEdge("b","c");
+    ug.addEdge("b","d");
+    ug.addEdge("d","e");
 
     // Displaying the undirected graph ug "
     cout << "Displaying the Directed Graph ug:" << endl;
     cout << ug << endl << endl;
 
     cout << "Displaying paths available from the b node in ug:" << endl;
-    ug.displayPaths(ug['b']);
+    ug.displayPaths(ug["b"]);
     cout << endl;
     
     cout << boolalpha;
-    cout << "Does a lead to e?: " << ug.leadsTo('a','e') << endl;
-    cout << "Does e lead to a?: " << ug.leadsTo('e','a') << endl << endl;
-
+    cout << "Does a lead to e?: " << ug.leadsTo("a","e") << endl;
+    cout << "Does e lead to a?: " << ug.leadsTo("e","a") << endl << endl;
     return 0;
 }

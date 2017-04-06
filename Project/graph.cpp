@@ -1,6 +1,6 @@
 #include "graph.h"
 #include <iterator>
-
+#if 0
 // Helper Function
 // Removes an element by value from a generic vector
 template <typename ELEM_T>
@@ -353,3 +353,4 @@ void Graph::displayPaths(const ID_T & id, ostream & out ) const {
     Node * node = queryById(id);
     return displayPaths(node, out);
 }
+#endif
