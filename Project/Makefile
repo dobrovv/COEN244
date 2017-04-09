@@ -1,6 +1,6 @@
 CC 	= g++
 CFLAGS 	= -Wall -std=c++11
-SOURCES = gtest.cpp graph.h 
+SOURCES = graph.h 
 TARGET = gtest
 
 ifeq ($(OS), Windows_NT)

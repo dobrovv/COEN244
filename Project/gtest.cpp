@@ -7,10 +7,7 @@ using namespace std;
 
 int main() {
     Graph<int, char> g;
-    
-    using NodeT = Graph<int,char>::NodeT;
-    using EdgeT = Graph<int,char>::EdgeT;
-    
+   
     // Suppose the required graph g
     // contains nodes a,b,c,d,e,f,h
     // and edges:
@@ -22,6 +19,10 @@ int main() {
     //  1. a -> b -> c -> d
     //  2. a -> b -> c -> e
     //  3. a -> f -> h
+    
+    // Typedefs for g 
+    using NodeT = Graph<int,char>::NodeT;
+    using EdgeT = Graph<int,char>::EdgeT;
 
     // 
     // Adding Nodes 
@@ -64,23 +65,40 @@ int main() {
     //
     
     // Sending g to the ostream
-    cout << "Graph g:"<< endl << g << endl << endl;
+    cout << "-------------------------------" << endl;
+    cout << "Sending the graph g to ostream:"<< endl << g << endl << endl;
     
     // Displaying the first edge in g
     vector<EdgeT*> edges = g.getEdges();
-    cout << "First edge in g:" << endl << edges.at(0) << endl << endl;
+    cout << "Sending the first edge in g to ostream:" << endl << edges.at(0) << endl << endl;
     
     // Displaying edges of the graph with weights and nodes values
     // ex (a:1, b:2 |15), where 1 and 2 are values of nodes 1 and 2and |15 is the weight
-    cout << "Edges in g with values displayed:" << endl;
+    cout << "Displaying the edges in g with their values present:" << endl;
     g.displayEdges(true, true, cout);
     cout << endl << endl;
-    
+
+
     //
     // Quering the graph
     //
+   
+
+    // Quering the graph for f->h Edge
+    EdgeT * fh  = g.queryByEdge('f','h');
+    cout << "Quering the graph g for f->h Edge" << endl;
+    if ( fh )
+        cout << fh << endl << endl; 
+
+    // Quering the graph by value 
+    vector<NodeT*> nodes_with_2 = g.queryByValue(2);
+    cout << "Quering the graph g for nodes with value 2: " << endl;
     
-    cout << "Listing paths going from a:" << endl;
+    for ( auto node : nodes_with_2 )
+        cout << node << " ";
+    cout << endl << endl;
+
+    cout << "Listing the paths in g going from the a node:" << endl;
     //Getting the paths
     vector<vector<EdgeT*>> paths = g.listPaths('a');
     
@@ -100,6 +118,7 @@ int main() {
 
     // Creating a copy of g
     Graph<int,char> g_copy(g);
+    cout << "-------------------------------" << endl;
     cout << "Creating a copy of g:" << endl;
     cout << g_copy << endl << endl;
 
@@ -109,11 +128,13 @@ int main() {
     // Removing the edge
     g_copy.removeEdge( ab );
 
-    cout << "Listing the copy of g with a -> b removed:" << endl;
-    cout << g_copy << endl << endl;
+    cout << "Listing the copy of g with a -> b edge removed:" << endl;
+    cout << g_copy  << endl << endl;
 
+    // Removinng the 'f' node by finding it by id first
     g_copy.removeNode(g_copy['f']);
-    cout << "Listing the copy of g with f removed:" << endl;
+
+    cout << "Listing the copy of g with the f node removed:" << endl;
     cout << g_copy << endl << endl;
 
     //
@@ -142,15 +163,37 @@ int main() {
     ug.addEdge("d","e");
 
     // Displaying the undirected graph ug "
-    cout << "Displaying the Directed Graph ug:" << endl;
+    cout << "-------------------------------" << endl;
+    cout << "Displaying the undirected graph ug:" << endl;
     cout << ug << endl << endl;
 
-    cout << "Displaying paths available from the b node in ug:" << endl;
+    cout << "Displaying the available paths from the b node in ug:" << endl;
     ug.displayPaths(ug["b"]);
     cout << endl;
     
     cout << boolalpha;
     cout << "Does a lead to e?: " << ug.leadsTo("a","e") << endl;
     cout << "Does e lead to a?: " << ug.leadsTo("e","a") << endl << endl;
+   
+    //
+    // Testging Exceptions
+    //
+    
+    cout << "-------------------------------" << endl;
+    cout << "Testing Exceptions: " << endl << endl;
+
+    cout << "Adding a node to the graph g with a default constructed id:" << endl;
+    try { g.addNode(99, char{}); } catch (invalid_id) { cout << "Exception Caught" << endl;}
+    
+    cout << "Adding a node to the graph g with an already present id a:" << endl;
+    try { g.addNode(99, 'a'); } catch (invalid_id) { cout << "Exception Caught" << endl;}
+    
+    cout << "Passing nullptr as a parameter to the listPaths()" << endl;
+    try { g.listPaths(nullptr); } catch (invalid_node) { cout << "Exception Caught" << endl;}
+
+    cout << "Quering the graph g by a node that was created by another graph:" << endl;
+    try { g.queryByEdge(g_copy['a'], g['b']); } catch (invalid_node) { cout << "Exception Caught" << endl;}
+
+    // Destroing the graphs
     return 0;
 }

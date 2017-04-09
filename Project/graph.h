@@ -14,17 +14,17 @@ using std::ostream;
 using std::exception;
 
 /*Graph's Exeptions*/
-/*
+
+class invalid_node: exception {
+    const char * what() const noexcept override 
+    { return "Invalid Node reference used as a parameter"; } 
+};
+
 class invalid_id: exception {
     const char * what() const noexcept override
     { return "Deault constructed or nonpresent id used as a parameter"; } 
 };
 
-class invalid_node: exception {
-    const char * what() const noexcept override 
-    { return "Node isn't present in the graph"; } 
-};
-*/
 
 /* Class Declarations */
 
@@ -65,13 +65,14 @@ private:
     vector<EdgeT*> links_to; // stores Edges that go from "this" node to "target" node
     vector<EdgeT*> linked_from; // stores Edges that go from "target" node to "this" node
 
-protected:
+private:
     Node(T value, ID_T id, GraphT *graph)
         : value(value), id(id), graph(graph), links_to(), linked_from() 
     {};
     ~Node() {}; 
     
     friend GraphT; // the class Graph<T, ID_T> is declared as a friend of Node 
+                   // to access the constructor 
 
 public:
     T getValue() const { return value; }
@@ -102,13 +103,15 @@ class Edge {
 
     int weight;
 
-protected:
+private:
     Edge(NodeT * origin, NodeT * target, int weight)
         : origin(origin), target(target), weight(weight)
     {};
     ~Edge() {};
 
-    friend GraphT;
+    friend GraphT; // the class Graph<T, ID_T> is declared as a friend of Edge
+                   // to access the constructor 
+
 
 public:
     NodeT * getOrigin() const { return origin; }
@@ -140,6 +143,7 @@ public:
     inline size_t size() const { return nodes.size(); }
     inline size_t isEmpty() const { return size() == 0; }
     inline bool isDirected() const { return is_directed;}
+    void setDirected(bool directed) { is_directed = directed; }
     
     NodeT * addNode(const T& value, const ID_T& id);    
     void removeNode(NodeT * node);
@@ -151,6 +155,7 @@ public:
 
     vector<NodeT*> getNodes() const;
     vector<EdgeT*> getEdges() const;
+    vector<ID_T>   getIDs() const;
    
     // Functions returning paths followed from a specific node
     vector<vector<EdgeT*>> listPaths(NodeT * origin, NodeT * ignore = nullptr) const;
@@ -206,6 +211,13 @@ Graph<T,ID_T>::Graph(const Graph& other) {
 
 template< typename T, typename ID_T> 
 Node<T,ID_T> * Graph<T,ID_T>::addNode(const T& value, const ID_T& id) {
+    
+    // Throw an exception if the given id
+    // was default constructed  
+    // or was already present in the graph
+    if ( id == ID_T{} || queryById(id) != nullptr )
+        throw invalid_id();
+
     NodeT * node = new NodeT(value, id, this);
     nodes.push_back(node);
     return node;
@@ -224,6 +236,7 @@ void Graph<T,ID_T>::removeNode(NodeT * node) {
         removeEdge(edge);
     }
     
+    
     for ( auto edge : edgesFromNode ) {
         removeEdge(edge);
     }
@@ -236,6 +249,13 @@ void Graph<T,ID_T>::removeNode(NodeT * node) {
 
 template< typename T, typename ID_T> 
 Edge<T,ID_T> * Graph<T,ID_T>::addEdge(NodeT * origin, NodeT * target, int weight) {
+    
+    if ( origin == nullptr || origin->getGraph() != this )
+        throw invalid_node();
+    
+    if ( target == nullptr || target->getGraph() != this )
+        throw invalid_node();
+
     EdgeT * edge = new EdgeT(origin, target, weight);
     origin->links_to.push_back(edge);
     target->linked_from.push_back(edge);
@@ -246,8 +266,12 @@ Edge<T,ID_T> * Graph<T,ID_T>::addEdge(NodeT * origin, NodeT * target, int weight
 
 template< typename T, typename ID_T> 
 Edge<T,ID_T> * Graph<T,ID_T>::addEdge(const ID_T & origin, const ID_T & target, int weight) {
+
     NodeT * org = queryById(origin);
     NodeT * trg = queryById(target);
+
+    if ( org == nullptr || trg == nullptr )
+        throw invalid_id();
 
     return Graph::addEdge(org, trg, weight);
 }
@@ -270,7 +294,7 @@ void  Graph<T,ID_T>::removeEdge(EdgeT * edge) {
 template< typename T, typename ID_T> 
 Node<T,ID_T> * Graph<T,ID_T>::queryById(const ID_T & id) const {
     for ( NodeT * node : nodes )
-        if ( node->id == id )
+        if ( node->getID() == id )
             return node;
 
     return nullptr;
@@ -279,7 +303,14 @@ Node<T,ID_T> * Graph<T,ID_T>::queryById(const ID_T & id) const {
 
 template< typename T, typename ID_T> 
 Edge<T,ID_T> * Graph<T,ID_T>::queryByEdge(NodeT * origin, NodeT * target) const {
-    for ( EdgeT * edge : origin->edgesFromNode() )
+     
+    if ( origin == nullptr || origin->getGraph() != this )
+        throw invalid_node();
+    
+    if ( target == nullptr || target->getGraph() != this )
+        throw invalid_node();
+
+   for ( EdgeT * edge : origin->edgesFromNode() )
         if ( target == edge->getTarget() ) 
             return edge;
 
@@ -301,6 +332,9 @@ Edge<T,ID_T> * Graph<T,ID_T>::queryByEdge(const ID_T & origin, const ID_T & targ
     NodeT * org = queryById(origin);
     NodeT * trg = queryById(target);
 
+    if ( org == nullptr || trg == nullptr )
+        throw invalid_id();
+    
     return queryByEdge(org, trg);
 }
 
@@ -335,13 +369,23 @@ vector<Edge<T,ID_T> *> Graph<T,ID_T>::getEdges() const {
 }
 
 template< typename T, typename ID_T> 
+vector<ID_T> Graph<T,ID_T>::getIDs() const {
+    vector<ID_T> IDs;
+    
+    for ( auto node : nodes ) 
+        IDs.push_bach(node->getID());
+    
+    return IDs;
+} 
+
+template< typename T, typename ID_T> 
 Node<T,ID_T> * Graph<T,ID_T>::operator[](const ID_T & id) {
     return queryById(id);
 }
 
 
 // Return a list of paths (a path is represented as vector<Edge*>)
-// that are possible to follow from the origin node.
+// that are possible to follow from the "origin" node.
 // Example:
 // Suppose a graph g is connected like this: 
 // ------------------------------
@@ -356,10 +400,15 @@ Node<T,ID_T> * Graph<T,ID_T>::operator[](const ID_T & id) {
 // The ignore parameter allows to specify a node whose path should be ignored 
 template< typename T, typename ID_T> 
 vector<vector<Edge<T,ID_T> *>> Graph<T,ID_T>::listPaths(NodeT * origin, NodeT *ignore) const { 
-    vector<vector<EdgeT *>> paths;
-    
+
+    vector<vector<EdgeT *>> paths; 
     vector<EdgeT*> edgesFromOrigin;
     
+    if ( origin == nullptr || origin->getGraph() != this )
+        throw invalid_node();
+
+    // Fetch the edges going from the origin node depending
+    // on the direction of the graph
     if ( isDirected() ) { 
         edgesFromOrigin = origin->edgesFromNode();
     } else {
@@ -421,6 +470,10 @@ vector<vector<Edge<T,ID_T> *>> Graph<T,ID_T>::listPaths(NodeT * origin, NodeT *i
 template< typename T, typename ID_T> 
 vector<vector<Edge<T,ID_T>*>> Graph<T,ID_T>::listPaths(const ID_T & origin) const {
     NodeT * org = queryById(origin);
+    
+    if ( org == nullptr )
+        throw invalid_id();
+
     return listPaths(org);
 }
 
@@ -428,6 +481,13 @@ vector<vector<Edge<T,ID_T>*>> Graph<T,ID_T>::listPaths(const ID_T & origin) cons
 template< typename T, typename ID_T> 
 bool Graph<T,ID_T>::leadsTo(NodeT * origin, NodeT * target) const {
     vector<vector<EdgeT*>> paths = listPaths(origin);
+    
+    if ( origin == nullptr || origin->getGraph() != this )
+        throw invalid_node();
+    
+    if ( target == nullptr || target->getGraph() != this )
+        throw invalid_node();
+
 
     for ( auto path : paths ) {
         for ( auto edge : path ) {
@@ -449,8 +509,12 @@ template< typename T, typename ID_T>
 bool Graph<T,ID_T>::leadsTo(ID_T origin, ID_T target) const {
     NodeT * orig = queryById(origin);
     NodeT * trgt = queryById(target);
-    return leadsTo(orig, trgt);
-}
+ 
+    if ( orig == nullptr || trgt == nullptr )
+        throw invalid_id();
+    
+   return leadsTo(orig, trgt);
+}      
 
 template< typename T, typename ID_T> 
 void Graph<T,ID_T>::displayEdges( bool display_value, bool display_weight,  std::ostream & out) const {
@@ -476,6 +540,9 @@ void Graph<T,ID_T>::displayEdges( bool display_value, bool display_weight,  std:
 template< typename T, typename ID_T> 
 void Graph<T,ID_T>::displayPaths(NodeT * node, ostream & out) const {
     vector<vector<EdgeT*>> paths = listPaths(node);
+    
+    if ( node == nullptr )
+        throw invalid_node();
 
     int count = 1;
 
@@ -510,6 +577,11 @@ void Graph<T,ID_T>::displayPaths(NodeT * node, ostream & out) const {
 template< typename T, typename ID_T> 
 void Graph<T,ID_T>::displayPaths(const ID_T & id, ostream & out ) const {
     NodeT * node = queryById(id);
+
+    if ( node == nullptr )
+        throw invalid_id();
+     
+
     return displayPaths(node, out);
 }
 
@@ -525,8 +597,8 @@ bool removeElement(vector<ELEM_T> & vec, ELEM_T elem)
             vec.erase(it);
             return true;
         }
-        std::advance(it, 1);
-    }
+        advance(it,1);
+   }
     
     return false;
 }
